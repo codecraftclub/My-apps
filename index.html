@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>എന്റെ കണക്ക് | Expense Manager</title>
+<style>
+:root{--bg:#f3f4fb;--card:#fff;--ink:#1e1b4b;--mute:#6b7280;--p:#6d28d9;--p2:#db2777;--inc:#059669;--exp:#e11d48;--tr:#2563eb;--line:#e5e7eb}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Malayalam",sans-serif;background:var(--bg)!important;color:var(--ink)!important;padding-bottom:84px}
+header{background:linear-gradient(135deg,#6d28d9,#db2777 60%,#f59e0b);color:#fff;padding:22px 18px 70px;border-radius:0 0 28px 28px}
+header h1{margin:0;font-size:20px}header small{opacity:.85}
+.hbtn{float:right;background:#ffffff30;border:0;color:#fff;border-radius:12px;padding:8px 12px;font-size:14px}
+main{padding:0 14px;margin-top:-52px}
+.tab{display:none}.tab.on{display:block}
+.card{background:var(--card)!important;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 6px 20px #6d28d91a;color:var(--ink)!important}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.sum div{border-radius:14px;padding:10px 4px;color:#fff;font-size:12px}
+.sum b{display:block;font-size:15px;margin-top:3px}
+.s1{background:linear-gradient(135deg,#10b981,#059669)}.s2{background:linear-gradient(135deg,#fb7185,#e11d48)}.s3{background:linear-gradient(135deg,#6366f1,#4338ca)}
+.mic{width:84px;height:84px;border-radius:50%;border:0;margin:6px auto 10px;display:block;background:linear-gradient(135deg,#6d28d9,#db2777);box-shadow:0 8px 22px #db277766;color:#fff}
+.mic.rec{animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 16px #db277722}}
+svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:12px;font-size:15px;margin-top:8px;background:#fff!important;color:var(--ink)!important;font-family:inherit}
+.btn{width:100%;border:0;border-radius:14px;padding:13px;font-size:16px;font-weight:600;color:#fff;margin-top:10px;background:linear-gradient(135deg,#6d28d9,#db2777)}
+.btn.sec{background:#eef2ff;color:var(--p)}
+.seg{display:flex;gap:6px;background:#eef0f7;padding:5px;border-radius:14px}
+.seg button{flex:1;border:0;border-radius:10px;padding:10px 4px;font-weight:600;background:transparent;color:var(--mute)}
+.seg button.on[data-t=income]{background:var(--inc);color:#fff}.seg button.on[data-t=expense]{background:var(--exp);color:#fff}.seg button.on[data-t=transfer]{background:var(--tr);color:#fff}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.dot{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;font-size:18px;flex:none}
+.grow{flex:1;min-width:0}.grow b{display:block;font-size:15px}.grow small{color:var(--mute)}
+.amt{font-weight:700;white-space:nowrap}
+.income{color:var(--inc)}.expense{color:var(--exp)}.transfer{color:var(--tr)}
+h3{margin:0 0 6px;font-size:16px}
+.ghead{display:flex;justify-content:space-between;align-items:center}
+.add{border:0;background:#eef2ff;color:var(--p);border-radius:10px;padding:6px 12px;font-weight:600}
+.del{border:0;background:none;color:#cbd5e1;font-size:20px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff!important;box-shadow:0 -4px 20px #0000001a;border-radius:22px 22px 0 0;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;border:0;background:none;color:#9ca3af;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;padding:6px;border-radius:14px}
+nav button.on{color:var(--p);background:#f3e8ff;font-weight:700}
+.empty{color:var(--mute);text-align:center;padding:14px;font-size:14px}
+.res{background:#faf5ff;border:1.5px dashed var(--p);border-radius:14px;padding:12px;margin-top:10px;display:none;font-size:14px}
+.chip{background:#f3e8ff;color:var(--p);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+details summary{list-style:none;cursor:pointer}details summary::-webkit-details-marker{display:none}
+.cinfo{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#fdf2f8;border-radius:12px;padding:8px;margin:2px 0 8px;text-align:center;color:#1e1b4b}.cinfo small{display:block;font-size:10.5px;color:#6b7280}.cinfo b{font-size:14px}
+#toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1e1b4b;color:#fff;padding:10px 18px;border-radius:20px;display:none;z-index:9;font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <button class="hbtn" onclick="setKey()">⚙ API Key</button>
+  <h1>💜 എന്റെ കണക്ക്</h1><small id="today"></small>
+</header>
+<main>
+
+<!-- HOME -->
+<section class="tab on" id="home">
+  <div class="card"><div class="sum">
+    <div class="s1">വരവ് / Income<b id="sInc">₹0</b></div>
+    <div class="s2">ചെലവ് / Expense<b id="sExp">₹0</b></div>
+    <div class="s3">ബാലൻസ്<b id="sBal">₹0</b></div></div></div>
+  <div class="card" style="text-align:center">
+    <button class="mic" id="mic" onclick="toggleMic()"><svg style="width:36px;height:36px" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
+    <small style="color:var(--mute)" id="micHint">മൈക്ക് അമർത്തി പറയൂ · ഉദാ: "ഇന്ന് ചായക്ക് 20 രൂപ ക്യാഷ്"</small>
+    <textarea id="voiceText" rows="2" placeholder="ഇവിടെ പറയുക / ടൈപ്പ് ചെയ്യുക (Gemini ഇത് മനസ്സിലാക്കും)"></textarea>
+    <button class="btn" id="goBtn" onclick="askGemini()">✨ Gemini-ക്ക് അയക്കൂ</button>
+    <div class="res" id="res"></div>
+  </div>
+  <div class="card"><h3>സമീപകാല ഇടപാടുകൾ</h3><div id="recent"></div></div>
+</section>
+
+<!-- TRANSACTION -->
+<section class="tab" id="trans">
+  <div class="card">
+    <div class="seg" id="seg">
+      <button data-t="income" onclick="setType('income')">⬇ Income</button>
+      <button data-t="expense" class="on" onclick="setType('expense')">⬆ Expense</button>
+      <button data-t="transfer" onclick="setType('transfer')">⇄ Transfer</button>
+    </div>
+    <small style="color:var(--mute);display:block;margin-top:8px" id="tHint"></small>
+  </div>
+  <div class="card" id="tForm" style="display:none">
+    <small>From / എവിടെ നിന്ന്</small><select id="fAcc"></select>
+    <small>To / എവിടേക്ക്</small><select id="fTo"></select>
+    <input id="fAmt" type="number" inputmode="decimal" placeholder="തുക / Amount ₹">
+    <input id="fDate" type="date">
+    <input id="fNote" placeholder="കുറിപ്പ് / Note (optional)">
+    <button class="btn" onclick="saveTx()">Transfer ചെയ്യുക</button>
+  </div>
+  <div id="txList"></div>
+</section>
+
+<!-- ACCOUNTS -->
+<section class="tab" id="accs">
+  <div id="accList"></div>
+</section>
+</main>
+
+<nav>
+  <button class="on" data-tab="home" onclick="go('home')"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+  <button data-tab="trans" onclick="go('trans')"><svg viewBox="0 0 24 24"><path d="M7 4v16M3 8l4-4 4 4M17 20V4m-4 12l4 4 4-4"/></svg>Transaction</button>
+  <button data-tab="accs" onclick="go('accs')"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>Accounts</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const GROUPS={bank:{n:'ബാങ്ക് / Banks',ic:'🏦',c:'#2563eb'},card:{n:'കാർഡ് / Cards',ic:'💳',c:'#db2777'},emi:{n:'EMI',ic:'📆',c:'#f59e0b'},cash:{n:'കയ്യിലെ പണം / Cash in hand',ic:'💵',c:'#059669'}};
+const CATS=['ഭക്ഷണം','യാത്ര','ഷോപ്പിംഗ്','ബില്ലുകൾ','ആരോഗ്യം','വിനോദം','വിദ്യാഭ്യാസം','വാടക','ശമ്പളം','മറ്റുള്ളവ'];
+const COL=['#6d28d9','#db2777','#f59e0b','#059669','#2563eb','#e11d48','#0891b2','#7c3aed'];
+let D=JSON.parse(localStorage.getItem('em_data')||'null')||{acc:[{id:1,name:'Cash',group:'cash',open:0}],tx:[]};
+D.rec=D.rec||[];let type='expense';
+const save=()=>localStorage.setItem('em_data',JSON.stringify(D));
+const inr=n=>'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+const f=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+const dOf=(y,m,d)=>new Date(y,m,Math.min(d,new Date(y,m+1,0).getDate()));
+const todayStr=()=>f(new Date());
+const toast=m=>{const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)};
+const accById=id=>D.acc.find(a=>a.id==id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function go(t){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id===t));
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));window.scrollTo(0,0)}
+
+function balance(a){let b=+a.open;D.tx.forEach(t=>{
+ if(t.type==='income'&&t.acc==a.id)b+=t.amt;
+ if(t.type==='expense'&&t.acc==a.id)b-=t.amt;
+ if(t.type==='transfer'){if(t.acc==a.id)b-=t.amt;if(t.to==a.id)b+=t.amt}});return b}
+
+function setType(t){type=t;
+ document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+ $('tForm').style.display=t==='transfer'?'block':'none';
+ $('tHint').textContent=t==='transfer'?'അക്കൗണ്ടുകൾ തമ്മിൽ പണം മാറ്റാം':'ഇവ Home-ലെ വോയ്സ് വഴി തനിയെ ചേർക്കപ്പെടും · category തനിയെ ഉണ്ടാകും';
+ render()}
+
+function fillSelects(){
+ const opts=D.acc.filter(a=>a.group!=='emi').map(a=>`<option value="${a.id}">${GROUPS[a.group].ic} ${esc(a.name)}</option>`).join('');
+ const f=$('fAcc').value,t=$('fTo').value;$('fAcc').innerHTML=opts;$('fTo').innerHTML=opts;
+ if(f)$('fAcc').value=f;if(t)$('fTo').value=t}
+
+function saveTx(tx){
+ tx=tx||{type:'transfer',amt:+$('fAmt').value,cat:'',acc:+$('fAcc').value,to:+$('fTo').value,date:$('fDate').value||todayStr(),note:$('fNote').value.trim()};
+ if(!tx.amt||tx.amt<=0)return toast('തുക നൽകൂ');
+ if(tx.type==='transfer'&&tx.acc===tx.to)return toast('രണ്ട് വ്യത്യസ്ത അക്കൗണ്ട് തിരഞ്ഞെടുക്കൂ');
+ if(tx.type!=='transfer'&&!tx.cat)tx.cat='മറ്റുള്ളവ';
+ tx.id=Date.now();D.tx.unshift(tx);D.tx.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);save();
+ $('fAmt').value='';$('fNote').value='';toast('സേവ് ചെയ്തു ✔');render();return true}
+
+function delTx(id){if(confirm('ഈ ഇടപാട് ഡിലീറ്റ് ചെയ്യണോ?')){D.tx=D.tx.filter(t=>t.id!==id);save();render()}}
+
+function txRow(t){
+ const sign=t.type==='income'?'+':t.type==='expense'?'−':'⇄';
+ const bg=t.type==='income'?'#10b981':t.type==='expense'?'#e11d48':'#2563eb';
+ const ic=t.type==='income'?'⬇':t.type==='expense'?'⬆':'⇄';
+ const a=accById(t.acc),b=accById(t.to);
+ const sub=t.type==='transfer'?`${esc(a?.name||'?')} → ${esc(b?.name||'?')}`:`${esc(a?.name||'?')}`;
+ return `<div class="row"><div class="dot" style="background:${bg}">${ic}</div><div class="grow"><b>${esc(t.type==='transfer'?'Transfer':t.cat)}</b><small>${sub} · ${t.date}${t.note?' · '+esc(t.note):''}</small></div><div class="amt ${t.type}">${sign}${inr(t.amt)}</div><button class="del" onclick="delTx(${t.id})">×</button></div>`}
+
+function listView(){
+ const list=D.tx.filter(x=>x.type===type);
+ if(!list.length)return '<div class="card empty">ഇടപാടുകൾ ഒന്നുമില്ല</div>';
+ if(type==='transfer')return '<div class="card">'+list.map(txRow).join('')+'</div>';
+ const g={};list.forEach(x=>{const c=x.cat||'മറ്റുള്ളവ';(g[c]=g[c]||[]).push(x)});
+ return Object.entries(g).map(([c,a])=>({c,a,s:a.reduce((t,x)=>t+x.amt,0)})).sort((x,y)=>y.s-x.s).map((o,i)=>{
+  const col=COL[i%COL.length];
+  return `<details open class="card" style="border-left:6px solid ${col}"><summary class="ghead"><span style="display:flex;align-items:center;gap:10px"><span class="dot" style="background:${col}">${esc(o.c[0].toUpperCase())}</span><span><b>${esc(o.c)}</b><br><small style="color:var(--mute)">${o.a.length} entries</small></span></span><b class="${type}" style="font-size:17px">${inr(o.s)}</b></summary>
+  <div style="margin-top:8px">${o.a.map(x=>{const ac=accById(x.acc);return `<div class="row"><div class="grow"><b class="${type}">${inr(x.amt)}</b><small>${x.date}${x.note?' · '+esc(x.note):''}</small></div><span class="chip">${ac?GROUPS[ac.group].ic+' '+esc(ac.name):'?'}</span><button class="del" onclick="delTx(${x.id})">×</button></div>`}).join('')}</div></details>`}).join('')}
+
+function render(){
+ $('today').textContent=new Date().toLocaleDateString('ml-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ const inc=D.tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amt,0),exp=D.tx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amt,0);
+ $('sInc').textContent=inr(inc);$('sExp').textContent=inr(exp);
+ $('sBal').textContent=inr(D.acc.reduce((s,a)=>s+balance(a),0));
+ $('recent').innerHTML=D.tx.slice(0,5).map(txRow).join('')||'<div class="empty">ഇടപാടുകൾ ഒന്നുമില്ല</div>';
+ $('txList').innerHTML=listView();
+ fillSelects();
+ $('accList').innerHTML=Object.entries(GROUPS).map(([g,m])=>{if(g==='emi')return emiCard(m);
+  const list=D.acc.filter(a=>a.group===g);const liab=g==='card'||g==='emi';
+  const total=list.reduce((s,a)=>s+balance(a),0);
+  return `<div class="card" style="border-top:5px solid ${m.c}"><div class="ghead"><h3>${m.ic} ${m.n}</h3><button class="add" onclick="addAcc('${g}')">+ ചേർക്കൂ</button></div>
+  <div style="color:${m.c};font-weight:700;margin-bottom:4px">${liab?'ആകെ കുടിശ്ശിക: '+inr(-total):'ആകെ: '+inr(total)}</div>
+  ${list.map(a=>{const b=balance(a);return `<div class="row"><div class="dot" style="background:${m.c}">${m.ic}</div><div class="grow"><b>${esc(a.name)}</b><small>${liab?'കുടിശ്ശിക':'ബാലൻസ്'}</small></div><div class="amt" style="color:${liab?(b<0?'var(--exp)':'var(--inc)'):(b<0?'var(--exp)':'var(--ink)')}">${inr(liab?-b:b)}</div><button class="del" onclick="delAcc(${a.id})">×</button></div>${g==='card'?cardHtml(a):''}`}).join('')||'<div class="empty">ഒന്നുമില്ല</div>'}</div>`}).join('')+autoCard()}
+
+function addAcc(g){
+ const name=prompt(GROUPS[g].n+' — പേര്:');if(!name)return;
+ const liab=g==='card';
+ const v=parseFloat(prompt(liab?'നിലവിലെ കുടിശ്ശിക (₹):':'ഇപ്പോഴത്തെ ബാലൻസ് (₹):','0'))||0;
+ const a={id:Date.now(),name:name.trim(),group:g,open:liab?-v:v};
+ if(liab){a.sd=parseInt(prompt('ബിൽ (സ്റ്റേറ്റ്മെന്റ്) തീയതി — മാസത്തിലെ ദിവസം (1-31):','15'))||0;a.dd=parseInt(prompt('ബിൽ അടയ്ക്കേണ്ട അവസാന തീയതി — ദിവസം (1-31):','5'))||0}
+ D.acc.push(a);save();render()}
+function delAcc(id){if(D.tx.some(t=>t.acc===id||t.to===id))return toast('ഇടപാടുകൾ ഉള്ള അക്കൗണ്ട് ഡിലീറ്റ് ചെയ്യാനാവില്ല');
+ if(confirm('ഡിലീറ്റ് ചെയ്യണോ?')){D.acc=D.acc.filter(a=>a.id!==id);save();render()}}
+
+/* ---------- Voice (records audio, Gemini understands Malayalam) ---------- */
+let mr=null,chunks=[];
+async function toWav(blob){const ac=new (window.AudioContext||window.webkitAudioContext)();const buf=await ac.decodeAudioData(await blob.arrayBuffer());
+ const rate=16000,len=Math.floor(buf.duration*rate),ch=buf.getChannelData(0),out=new Int16Array(len),k=buf.sampleRate/rate;
+ for(let i=0;i<len;i++){const v=Math.max(-1,Math.min(1,ch[Math.floor(i*k)]||0));out[i]=v<0?v*32768:v*32767}
+ const h=new DataView(new ArrayBuffer(44)),w=(o,t)=>[...t].forEach((c,i)=>h.setUint8(o+i,c.charCodeAt(0)));
+ w(0,'RIFF');h.setUint32(4,36+len*2,true);w(8,'WAVEfmt ');h.setUint32(16,16,true);h.setUint16(20,1,true);h.setUint16(22,1,true);h.setUint32(24,rate,true);h.setUint32(28,rate*2,true);h.setUint16(32,2,true);h.setUint16(34,16,true);w(36,'data');h.setUint32(40,len*2,true);
+ return new Blob([h,out],{type:'audio/wav'})}
+async function toggleMic(){
+ if(mr&&mr.state==='recording'){mr.stop();return}
+ if(!navigator.mediaDevices||!window.MediaRecorder)return toast('https ലിങ്കിൽ (GitHub Pages) Chrome-ൽ തുറക്കൂ');
+ try{const st=await navigator.mediaDevices.getUserMedia({audio:true});
+  mr=new MediaRecorder(st);chunks=[];
+  mr.ondataavailable=e=>chunks.push(e.data);
+  mr.onstop=async()=>{st.getTracks().forEach(t=>t.stop());$('mic').classList.remove('rec');$('micHint').textContent='മൈക്ക് അമർത്തി പറയൂ';
+   try{const wav=await toWav(new Blob(chunks));const r=new FileReader();
+    r.onload=()=>askGemini({mime:'audio/wav',data:r.result.split(',')[1]});r.readAsDataURL(wav)}catch(e){toast('ഓഡിയോ പിശക്')}};
+  mr.start();$('mic').classList.add('rec');$('micHint').textContent='കേൾക്കുന്നു… പറഞ്ഞ ശേഷം വീണ്ടും അമർത്തൂ'}
+ catch(e){toast('മൈക്ക് അനുമതി നൽകൂ')}}
+
+/* ---------- Gemini ---------- */
+function setKey(){const k=prompt('Gemini API Key നൽകൂ:',localStorage.getItem('em_key')||'');if(k!==null)localStorage.setItem('em_key',k.trim())}
+
+async function askGemini(audio){
+ const text=audio?'':$('voiceText').value.trim();if(!audio&&!text)return toast('ആദ്യം എന്തെങ്കിലും പറയൂ');
+ let key=localStorage.getItem('em_key');if(!key){setKey();key=localStorage.getItem('em_key');if(!key)return}
+ const btn=$('goBtn');btn.textContent='⏳ ആലോചിക്കുന്നു…';btn.disabled=true;
+ const A=D.acc.filter(a=>a.group!=='emi');
+ const cats=[...new Set([...CATS,...D.tx.map(t=>t.cat).filter(Boolean)])].join(', ');
+ const P=`You are an expense parser. Today is ${todayStr()}. Input is Malayalam/English/Manglish ${audio?'speech (audio)':'text: "'+text+'"'}. Return JSON only:
+{"heard":"transcript","type":"income|expense|transfer","amount":number,"category":"string","account":"string","to_account":"string","date":"YYYY-MM-DD","note":"string","recurring":null or {"name":"string","freq":"monthly|yearly","count":number or null}}
+Rules: existing categories are [${cats}]. Use an existing one only if it clearly fits, else CREATE a short English category (supermarket->Grocery). If the user says to add to a named category (e.g. അതർ = Other) use exactly that category. "account" = closest of [${A.map(a=>a.name+' ('+a.group+')').join(', ')}] (empty if unknown). Transfer = moving money between accounts or paying a card bill: account = from, to_account = to, category empty; any remark/റിമാർക്ക് goes to note. Set recurring only if the user mentions auto renewal / every month / every year; count from the duration (12 months -> 12, else null). Date defaults to today.`;
+ try{
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({contents:[{parts:audio?[{inline_data:{mime_type:audio.mime,data:audio.data}},{text:P}]:[{text:P}]}],generationConfig:{responseMimeType:'application/json'}})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||'API error');
+  const o=JSON.parse(j.candidates[0].content.parts[0].text.replace(/```json|```/g,''));
+  const fa=n=>(A.find(a=>a.name.toLowerCase()===String(n||'').toLowerCase())||A.find(a=>String(n||'').toLowerCase().includes(a.name.toLowerCase()))||A[0]).id;
+  const tx={type:['income','expense','transfer'].includes(o.type)?o.type:'expense',amt:+o.amount,cat:o.category||'',acc:fa(o.account),to:fa(o.to_account),date:/^\d{4}-\d{2}-\d{2}$/.test(o.date)?o.date:todayStr(),note:o.note||''};
+  if(!saveTx(tx))throw new Error('തുക മനസ്സിലായില്ല, ഒന്നുകൂടി പറയൂ');
+  let extra='';
+  if(o.recurring&&tx.type==='expense'){D.rec.push({id:tx.id+1,kind:'auto',name:o.recurring.name||tx.cat,amt:tx.amt,acc:tx.acc,cat:tx.cat,freq:o.recurring.freq==='yearly'?'yearly':'monthly',start:tx.date,count:o.recurring.count||null,done:1});save();render();extra='<br>🔁 ഓട്ടോ റിന്യൂവൽ ചേർത്തു ('+(o.recurring.freq==='yearly'?'വർഷം':'മാസം')+'തോറും'+(o.recurring.count?', '+o.recurring.count+' തവണ':'')+')'}
+  const res=$('res');res.style.display='block';
+  res.innerHTML=`🎤 ${esc(o.heard||text)}<br>✅ സേവ് ചെയ്തു<br><b class="${tx.type}">${tx.type.toUpperCase()} · ${inr(tx.amt)}</b><br>${esc(tx.cat||'Transfer')} · ${esc(accById(tx.acc).name)}${tx.type==='transfer'?' → '+esc(accById(tx.to).name):''} · ${tx.date}${tx.note?' · '+esc(tx.note):''}${extra}
+  <button class="btn sec" onclick="undoTx(${tx.id})">↩ Undo</button>`;
+  $('voiceText').value='';
+ }catch(e){toast('പിശക്: '+e.message)}
+ btn.textContent='✨ Gemini-ക്ക് അയക്കൂ';btn.disabled=false}
+
+/* ---------- EMI / auto renewals / card cycle ---------- */
+function addMonths(d,n){const x=new Date(d+'T00:00:00'),day=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+n);return f(dOf(x.getFullYear(),x.getMonth(),day))}
+function processRec(){const td=todayStr();let n=0;
+ D.rec.forEach(r=>{const st=r.freq==='yearly'?12:1;
+  while(n<800){const d=addMonths(r.start,r.done*st);
+   if(d>td||(r.count&&r.done>=r.count)||(r.end&&d>r.end))break;
+   D.tx.push({id:Date.now()+(n++),type:'expense',amt:r.amt,cat:r.cat,acc:r.acc,to:0,date:d,note:r.name+' (auto)'});r.done++}});
+ if(n){D.tx.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);save()}}
+function addEmi(){const name=$('eN').value.trim(),amt=+$('eM').value,s=$('eS').value,e=$('eE').value;
+ if(!name||!amt||!s||!e||e<s)return toast('പേര്, മാസത്തവണ, തീയതികൾ ശരിയായി നൽകൂ');
+ const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00'),count=(b.getFullYear()-a.getFullYear())*12+b.getMonth()-a.getMonth()+1;
+ D.rec.push({id:Date.now(),kind:'emi',name,amt,total:+$('eT').value||amt*count,acc:+$('eA').value,cat:'EMI',freq:'monthly',start:s,end:e,count,done:0});
+ processRec();save();render();toast('EMI ചേർത്തു ✔')}
+function delRec(id){if(confirm('ഡിലീറ്റ് ചെയ്യണോ? (മുൻപ് ചേർന്ന ഇടപാടുകൾ നിലനിൽക്കും)')){D.rec=D.rec.filter(r=>r.id!==id);save();render()}}
+function emiCard(m){const l=D.rec.filter(r=>r.kind==='emi'),A=D.acc.filter(a=>a.group!=='emi');
+ const left=l.reduce((t,r)=>t+r.total-Math.min(r.total,r.amt*r.done),0);
+ return `<div class="card" style="border-top:5px solid ${m.c}"><div class="ghead"><h3>${m.ic} ${m.n}</h3><button class="add" onclick="$('emiForm').style.display='block'">+ ചേർക്കൂ</button></div>
+ <div style="color:${m.c};font-weight:700">ആകെ ബാക്കി: ${inr(left)}</div>
+ <div id="emiForm" style="display:none"><input id="eN" placeholder="EMI പേര് (ഉദാ: ഫോൺ)"><input id="eT" type="number" placeholder="ആകെ തുക ₹ (ഒഴിച്ചിട്ടാൽ തനിയെ)"><input id="eM" type="number" placeholder="മാസത്തവണ ₹"><small>തുടങ്ങുന്ന തീയതി</small><input id="eS" type="date"><small>അവസാന തീയതി</small><input id="eE" type="date"><select id="eA">${A.map(a=>`<option value="${a.id}">${GROUPS[a.group].ic} ${esc(a.name)}</option>`).join('')}</select><button class="btn" onclick="addEmi()">EMI സേവ് ചെയ്യുക</button></div>
+ ${l.map(r=>{const paid=Math.min(r.total,r.amt*r.done),pct=Math.round(paid/r.total*100),nx=r.done<r.count?addMonths(r.start,r.done):null;
+  return `<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="ghead"><b>${esc(r.name)}</b><button class="del" onclick="delRec(${r.id})">×</button></div><small style="color:var(--mute)">${inr(r.amt)}/മാസം · ${esc(accById(r.acc)?.name||'?')} · ${r.done}/${r.count} മാസം${nx?' · അടുത്തത് '+nx:' · ✔ കഴിഞ്ഞു'}</small><div style="height:8px;background:#fef3c7;border-radius:6px;margin:6px 0"><div style="width:${pct}%;height:100%;background:#f59e0b;border-radius:6px"></div></div><small>അടച്ചത് ${inr(paid)} · ബാക്കി ${inr(r.total-paid)}</small></div>`}).join('')||'<div class="empty">ഒന്നുമില്ല</div>'}</div>`}
+function autoCard(){const l=D.rec.filter(r=>r.kind==='auto');
+ return `<div class="card" style="border-top:5px solid #7c3aed"><h3>🔁 ഓട്ടോ റിന്യൂവൽ</h3>${l.map(r=>`<div class="row"><div class="dot" style="background:#7c3aed">🔁</div><div class="grow"><b>${esc(r.name)}</b><small>${r.freq==='yearly'?'വർഷം':'മാസം'}തോറും · ${r.done}${r.count?'/'+r.count:''} തവണ${r.count&&r.done>=r.count?' · കഴിഞ്ഞു':' · അടുത്തത് '+addMonths(r.start,r.done*(r.freq==='yearly'?12:1))}</small></div><div class="amt">${inr(r.amt)}</div><button class="del" onclick="delRec(${r.id})">×</button></div>`).join('')||'<div class="empty">വോയ്സിൽ പറയൂ: "ഇൻഷുറൻസ് ഓട്ടോ റിന്യൂവൽ, മാസം 1000 രൂപ, 12 മാസത്തേക്ക്"</div>'}</div>`}
+function cardHtml(a){if(!a.sd||!a.dd)return '';
+ const n=new Date(),Y=n.getFullYear(),M=n.getMonth();let ls=dOf(Y,M,a.sd);if(ls>n)ls=dOf(Y,M-1,a.sd);
+ const due=dOf(ls.getFullYear(),ls.getMonth()+(a.dd>a.sd?0:1),a.dd),L=f(ls);
+ let cb=Math.max(0,-a.open),cy=0,pay=0;
+ D.tx.forEach(t=>{if((t.type==='expense'||t.type==='transfer')&&t.acc==a.id){t.date<=L?cb+=t.amt:cy+=t.amt}
+  if((t.type==='income'&&t.acc==a.id)||(t.type==='transfer'&&t.to==a.id))pay+=t.amt});
+ const billed=Math.max(0,cb-pay),days=Math.ceil((due-new Date(Y,M,n.getDate()))/864e5),paid=cb>0&&billed===0;
+ return `<div class="cinfo"><div><small>ബിൽ ${L}</small><b>${paid?'✔ Paid':inr(billed)}</b></div><div><small>അവസാന തീയതി ${f(due)}</small><b style="color:${days<=3&&!paid?'#e11d48':'inherit'}">${paid?'—':days<0?'കഴിഞ്ഞു':days+' ദിവസം'}</b></div><div><small>പുതിയ സൈക്കിൾ</small><b>${inr(cy)}</b></div></div>`}
+
+function undoTx(id){D.tx=D.tx.filter(t=>t.id!==id);D.rec=D.rec.filter(r=>r.id!==id+1);save();$('res').style.display='none';toast('Undo ചെയ്തു');render()}
+
+$('fDate').value=todayStr();processRec();setType('expense');
+</script>
+</body>
+</html>
