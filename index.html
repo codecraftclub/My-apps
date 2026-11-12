@@ -3,14 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>എന്റെ കണക്ക് | Expense Manager</title>
+<title>My Expense Manager</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6d28d9">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Expense Manager">
 <style>
 :root{--bg:#f3f4fb;--card:#fff;--ink:#1e1b4b;--mute:#6b7280;--p:#6d28d9;--p2:#db2777;--inc:#059669;--exp:#e11d48;--tr:#2563eb;--line:#e5e7eb}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Malayalam",sans-serif;background:var(--bg)!important;color:var(--ink)!important;padding-bottom:84px}
 header{background:linear-gradient(135deg,#6d28d9,#db2777 60%,#f59e0b);color:#fff;padding:22px 18px 70px;border-radius:0 0 28px 28px}
 header h1{margin:0;font-size:20px}header small{opacity:.85}
-.hbtn{float:right;background:#ffffff30;border:0;color:#fff;border-radius:12px;padding:8px 12px;font-size:14px}
+.hbtn{float:right;background:#ffffff30;border:0;color:#fff;border-radius:12px;padding:6px 10px;font-size:13px;margin-left:6px}
 main{padding:0 14px;margin-top:-52px}
 .tab{display:none}.tab.on{display:block}
 .card{background:var(--card)!important;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 6px 20px #6d28d91a;color:var(--ink)!important}
@@ -46,13 +52,16 @@ nav button.on{color:var(--p);background:#f3e8ff;font-weight:700}
 .chip{background:#f3e8ff;color:var(--p);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
 details summary{list-style:none;cursor:pointer}details summary::-webkit-details-marker{display:none}
 .cinfo{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#fdf2f8;border-radius:12px;padding:8px;margin:2px 0 8px;text-align:center;color:#1e1b4b}.cinfo small{display:block;font-size:10.5px;color:#6b7280}.cinfo b{font-size:14px}
-#toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1e1b4b;color:#fff;padding:10px 18px;border-radius:20px;display:none;z-index:9;font-size:14px}
+.plus{width:42px;height:42px;border-radius:50%;border:0;background:linear-gradient(135deg,#6d28d9,#db2777);color:#fff;font-size:26px;line-height:1;box-shadow:0 4px 12px #db277755;flex:none;display:grid;place-items:center}
+#modal{display:none;position:fixed;inset:0;background:#0007;z-index:30;align-items:flex-end}
+.sheet{background:#fff;color:#1e1b4b;width:100%;border-radius:24px 24px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+#toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1e1b4b;color:#fff;padding:10px 18px;border-radius:20px;display:none;z-index:40;font-size:14px}
 </style>
 </head>
 <body>
 <header>
-  <button class="hbtn" onclick="setKey()">⚙ API Key</button>
-  <h1>💜 എന്റെ കണക്ക്</h1><small id="today"></small>
+  <button class="hbtn" onclick="setKey()">⚙ Key</button><button class="hbtn" id="cloudBtn" onclick="window.cloudToggle&&cloudToggle()">☁ Login</button>
+  <h1>🐷 My Expense Manager</h1><small id="today"></small><br><small id="sync" style="opacity:.85"></small>
 </header>
 <main>
 
@@ -81,7 +90,7 @@ details summary{list-style:none;cursor:pointer}details summary::-webkit-details-
       <button data-t="expense" class="on" onclick="setType('expense')">⬆ Expense</button>
       <button data-t="transfer" onclick="setType('transfer')">⇄ Transfer</button>
     </div>
-    <small style="color:var(--mute);display:block;margin-top:8px" id="tHint"></small>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px"><small style="color:var(--mute)" id="tHint"></small><button class="plus" id="plusBtn" onclick="openAdd()">+</button></div>
   </div>
   <div class="card" id="tForm" style="display:none">
     <small>From / എവിടെ നിന്ന്</small><select id="fAcc"></select>
@@ -101,6 +110,12 @@ details summary{list-style:none;cursor:pointer}details summary::-webkit-details-
 <section class="tab" id="rep"><div id="repBox"></div></section>
 </main>
 
+<div id="modal" onclick="if(event.target===this)closeAdd()"><div class="sheet"><h3>ചെലവ് ചേർക്കൂ</h3>
+ <small>തീയതി</small><input id="aDate" type="date">
+ <small>തുക ₹</small><input id="aAmt" type="number" inputmode="decimal" placeholder="തുക">
+ <small>എന്താവശ്യം</small><input id="aCat" list="aCats" placeholder="ഉദാ: Grocery, Fuel"><datalist id="aCats"></datalist>
+ <small>അക്കൗണ്ട്</small><select id="aAcc"></select>
+ <button class="btn" onclick="saveAdd()">സേവ് ചെയ്യുക</button><button class="btn sec" onclick="closeAdd()">റദ്ദാക്കുക</button></div></div>
 <nav>
   <button class="on" data-tab="home" onclick="go('home')"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</button>
   <button data-tab="trans" onclick="go('trans')"><svg viewBox="0 0 24 24"><path d="M7 4v16M3 8l4-4 4 4M17 20V4m-4 12l4 4 4-4"/></svg>Transaction</button>
@@ -116,7 +131,9 @@ const CATS=['ഭക്ഷണം','യാത്ര','ഷോപ്പിംഗ്'
 const COL=['#6d28d9','#db2777','#f59e0b','#059669','#2563eb','#e11d48','#0891b2','#7c3aed'];
 let D=JSON.parse(localStorage.getItem('em_data')||'null')||{acc:[{id:1,name:'Cash',group:'cash',open:0}],tx:[]};
 D.rec=D.rec||[];let type='expense';
-const save=()=>localStorage.setItem('em_data',JSON.stringify(D));
+const save=()=>{localStorage.setItem('em_data',JSON.stringify(D));localStorage.setItem('em_upd',Date.now());window.cloudPush&&window.cloudPush()};
+window.emGet=()=>D;
+window.emSet=(d,u)=>{D=d;D.acc=D.acc||[];D.tx=D.tx||[];D.rec=D.rec||[];localStorage.setItem('em_data',JSON.stringify(D));localStorage.setItem('em_upd',u||Date.now());processRec();render()};
 const inr=n=>'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
 const f=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
 const dOf=(y,m,d)=>new Date(y,m,Math.min(d,new Date(y,m+1,0).getDate()));
@@ -136,7 +153,8 @@ function balance(a){let b=+a.open;D.tx.forEach(t=>{
 function setType(t){type=t;
  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
  $('tForm').style.display=t==='transfer'?'block':'none';
- $('tHint').textContent=t==='transfer'?'അക്കൗണ്ടുകൾ തമ്മിൽ പണം മാറ്റാം':'ഇവ Home-ലെ വോയ്സ് വഴി തനിയെ ചേർക്കപ്പെടും · category തനിയെ ഉണ്ടാകും';
+ $('tHint').textContent=t==='transfer'?'അക്കൗണ്ടുകൾ തമ്മിൽ പണം മാറ്റാം':t==='expense'?'+ അമർത്തി ചെലവ് ചേർക്കാം · അല്ലെങ്കിൽ Home-ൽ വോയ്സ്':'Home-ലെ വോയ്സ് വഴി വരവ് ചേർക്കാം';
+ $('plusBtn').style.display=t==='expense'?'grid':'none';
  render()}
 
 function fillSelects(){
@@ -314,9 +332,40 @@ function renderReports(){
  <div class="card"><h3>📊 ഈ മാസം vs കഴിഞ്ഞ മാസം</h3><small style="color:var(--mute)">നിറമുള്ളത്: ഈ മാസം · ചാരനിറം: കഴിഞ്ഞ മാസം</small>${cmp}</div>
  <div class="card"><h3>📈 6 മാസത്തെ വരവ് / ചെലവ്</h3><svg viewBox="0 0 320 155" style="width:100%;height:auto;stroke:none">${bars}</svg><div style="text-align:center;font-size:12px;color:var(--mute)"><span style="color:#10b981">■</span> വരവ് &nbsp; <span style="color:#fb7185">■</span> ചെലവ്</div></div>`}
 
+function openAdd(){
+ $('aDate').value=todayStr();$('aAmt').value='';$('aCat').value='';
+ $('aCats').innerHTML=[...new Set([...CATS,...D.tx.map(t=>t.cat).filter(Boolean)])].map(c=>`<option value="${esc(c)}">`).join('');
+ $('aAcc').innerHTML=D.acc.filter(a=>a.group!=='emi').map(a=>`<option value="${a.id}">${GROUPS[a.group].ic} ${esc(a.name)}</option>`).join('');
+ $('modal').style.display='flex';setTimeout(()=>$('aAmt').focus(),150)}
+function closeAdd(){$('modal').style.display='none'}
+function saveAdd(){const amt=+$('aAmt').value;if(!amt||amt<=0)return toast('തുക നൽകൂ');
+ if(saveTx({type:'expense',amt,cat:$('aCat').value.trim(),acc:+$('aAcc').value,to:0,date:$('aDate').value||todayStr(),note:''}))closeAdd()}
 function undoTx(id){D.tx=D.tx.filter(t=>t.id!==id);D.rec=D.rec.filter(r=>r.id!==id+1);save();$('res').style.display='none';toast('Undo ചെയ്തു');render()}
 
 $('fDate').value=todayStr();processRec();setType('expense');
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyDA1XwfYzlPCL_Soxia0d-JpNekGGCaJMM",authDomain:"mypscrevison.firebaseapp.com",projectId:"mypscrevison",storageBucket:"mypscrevison.firebasestorage.app",messagingSenderId:"89979950079",appId:"1:89979950079:web:707815264541bba457cdca",measurementId:"G-GC849S4G0N"});
+const auth=getAuth(app),db=getFirestore(app),el=id=>document.getElementById(id);
+let uid=null,timer=null;
+const say=m=>{el('sync').textContent=m};
+window.cloudToggle=async()=>{
+ if(uid){if(confirm('Sign out ചെയ്യണോ?'))await signOut(auth);return}
+ try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){say('⚠ '+(e.code||e.message))}};
+window.cloudPush=()=>{if(!uid)return;clearTimeout(timer);say('☁ സേവ് ചെയ്യുന്നു…');
+ timer=setTimeout(()=>setDoc(doc(db,'users',uid),{data:JSON.stringify(window.emGet()),updated:+localStorage.getItem('em_upd')||Date.now()}).then(()=>say('☁ ക്ലൗഡിൽ സേവ് ആയി')).catch(e=>say('⚠ '+(e.code||e.message))),700)};
+onAuthStateChanged(auth,async u=>{
+ uid=u?u.uid:null;el('cloudBtn').textContent=u?'☁ '+(u.displayName||'Account').split(' ')[0]:'☁ Login';
+ if(!u){say('ഫോണിൽ മാത്രം സേവ് ആകുന്നു · Login ചെയ്യൂ');return}
+ say('☁ ലോഡ് ചെയ്യുന്നു…');
+ try{const snap=await getDoc(doc(db,'users',uid)),lu=+localStorage.getItem('em_upd')||0;
+  if(snap.exists()&&snap.data().updated>lu){window.emSet(JSON.parse(snap.data().data),snap.data().updated);say('☁ ക്ലൗഡിൽ നിന്ന് ലോഡ് ചെയ്തു')}
+  else window.cloudPush()}
+ catch(e){say('⚠ '+(e.code||e.message))}});
 </script>
 </body>
 </html>
