@@ -1,4 +1,5 @@
 {
+  "id": "my-expense-manager",
   "name": "My Expense Manager",
   "short_name": "Expense Manager",
   "description": "Voice-powered expense manager",
